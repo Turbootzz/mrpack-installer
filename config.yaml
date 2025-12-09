@@ -1,0 +1,221 @@
+# Modrinth Modpack Installer Configuration
+# Copy this file to config.yaml and edit for your setup
+
+# =============================================================================
+# REQUIRED SETTINGS
+# =============================================================================
+
+# Modrinth modpack project ID (from URL or project page)
+# Example URLs:
+#   modrinth.com/modpack/cobblemon-modpack  -> use "cobblemon-modpack"
+#   modrinth.com/modpack/adrenaserver       -> use "adrenaserver"
+# You can also use the project ID shown on the modpack page (e.g., "Jkb29YJU")
+modpack_id: "YOUR_MODPACK_ID"
+
+# Path to your Minecraft server instance
+# This directory should contain (or will contain) the 'mods' folder
+instance_dir: "/path/to/your/minecraft/server"
+
+# =============================================================================
+# OPTIONAL SETTINGS
+# =============================================================================
+
+# File ownership permissions (set both to null to skip permission fixing)
+# Useful when running as root but server runs as different user
+permissions:
+  user: null    # e.g., "minecraft", "amp", "pterodactyl"
+  group: null   # e.g., "minecraft", "amp", "pterodactyl"
+
+# =============================================================================
+# PRESERVED MODS
+# =============================================================================
+# Mods matching these patterns are NEVER removed during updates
+# Uses partial matching - "spark" matches "spark-1.10.73-fabric.jar"
+# Add your custom server-side mods here
+
+preserved_mods:
+  # Proxy support
+  - fabricproxy
+  - fabric-proxy
+  
+  # Bedrock player support
+  - floodgate
+  - geyser
+  
+  # Cross-version support
+  - viaversion
+  - viafabric
+  - viabackwards
+  
+  # Other common server mods
+  - crossstitch
+  - spark
+
+# =============================================================================
+# CLIENT-ONLY MOD BLACKLIST
+# =============================================================================
+# Mods matching these patterns are skipped during installation
+# Uses partial matching on lowercase filenames
+# The installer also checks the modpack's env.server field automatically
+
+client_only_mods:
+  # -------------------------
+  # UI / Menu Mods
+  # -------------------------
+  - modmenu
+  - controlling
+  - configured
+  - catalogue
+  - betterf3
+  - appleskin
+  - jade
+  - wthit
+  - hwyla
+  - custom-hud
+  - blur
+  
+  # -------------------------
+  # Graphics / Shaders
+  # -------------------------
+  - iris
+  - optifine
+  - optifabric
+  - shaders
+  - sodium
+  - sodium-extra
+  - reeses-sodium
+  - lambdynamiclights
+  - continuity
+  - cit-resewn
+  - citresewn
+  - entityculling
+  - entity-culling
+  - enhanced-block-entities
+  - dynamic-fps
+  - dynamicfps
+  - indium
+  - rubidium
+  - embeddium
+  - oculus
+  
+  # -------------------------
+  # Animations / Visuals
+  # -------------------------
+  - not-enough-animations
+  - eating-animation
+  - visuality
+  - falling-leaves
+  - skin-layers-3d
+  - skinlayers3d
+  - 3d-skin-layers
+  - itemphysic
+  - physics-mod
+  - firstperson
+  - first-person
+  - cameraoverhaul
+  - camera-overhaul
+  
+  # -------------------------
+  # Sound (Client-side)
+  # -------------------------
+  - sound-physics
+  - presence-footsteps
+  - ambient-sounds
+  - ambientsounds
+  - extrasounds
+  - auditory
+  
+  # -------------------------
+  # Maps / Minimap
+  # -------------------------
+  - xaeros-minimap
+  - xaeros-worldmap
+  - xaero
+  - journeymap
+  - voxelmap
+  - light-overlay
+  - lightoverlay
+  
+  # -------------------------
+  # Inventory / Recipe Viewers
+  # -------------------------
+  - mouse-tweaks
+  - mousetweaks
+  - inventory-sorting
+  - inventorysorter
+  - shulkerboxtooltip
+  - roughly-enough-items
+  - rei-
+  - emi-
+  - emi.
+  - jei-
+  - durabilityviewer
+  - itemscroller
+  - item-scroller
+  - invsort
+  
+  # -------------------------
+  # Chat / Social
+  # -------------------------
+  - chat-heads
+  - chatheads
+  - chatpatches
+  - nochatreports
+  - no-chat-reports
+  
+  # -------------------------
+  # Performance (Client-only)
+  # -------------------------
+  - lazydfu
+  - memoryleakfix
+  - smoothboot
+  - smooth-boot
+  
+  # -------------------------
+  # Screenshots / Recording
+  # -------------------------
+  - replay
+  - replaymod
+  - fabrishot
+  - screenshot
+  
+  # -------------------------
+  # Cosmetics / Capes
+  # -------------------------
+  - capes
+  - ears
+  - emotecraft
+  - cosmetica
+  
+  # -------------------------
+  # Misc Client-only
+  # -------------------------
+  - worldedit-cui
+  - wecui
+  - antighost
+  - cleanview
+  - tooltipfix
+  - tooltip-fix
+  - itemmodelfix
+  - model-gap-fix
+  - advancementinfo
+  - betteradvancements
+  - auth-me
+  - authme
+  - torohealth
+  - damagetilt
+  - damage-tilt
+  - screenshottoclipboard
+  - nofog
+  - no-fog
+  - cleardespawn
+  - shulkertooltip
+
+# =============================================================================
+# MODPACK-SPECIFIC CLIENT MODS
+# =============================================================================
+# Add client mods specific to your modpack that aren't in the general list
+# Example for Cobblemon modpacks:
+#   - ui-tweak
+#   - journey-mount
+
