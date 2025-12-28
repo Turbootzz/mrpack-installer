@@ -44,6 +44,7 @@ class Config:
     perm_user: Optional[str] = None
     perm_group: Optional[str] = None
     preserved_mods: list[str] = field(default_factory=list)
+    preserved_configs: list[str] = field(default_factory=list)
     client_only_mods: list[str] = field(default_factory=list)
 
     @classmethod
@@ -60,6 +61,7 @@ class Config:
             perm_user=permissions.get("user"),
             perm_group=permissions.get("group"),
             preserved_mods=data.get("preserved_mods", []),
+            preserved_configs=data.get("preserved_configs", []),
             client_only_mods=data.get("client_only_mods", []),
         )
 
@@ -149,6 +151,23 @@ class ModpackInstaller:
                 return True
         return False
 
+    def _is_preserved_config(self, relative_path: str) -> bool:
+        """Check if a config file/directory should be preserved during updates.
+        
+        Args:
+            relative_path: Path relative to instance_dir (e.g., 'config/FabricProxy-Lite.toml')
+        """
+        path_lower = relative_path.lower()
+        for pattern in self.config.preserved_configs:
+            pattern_lower = pattern.lower()
+            # Check if the path matches or starts with the pattern
+            if path_lower == pattern_lower or path_lower.startswith(pattern_lower + "/"):
+                return True
+            # Also check if the pattern is contained in the path (for simple filename matching)
+            if pattern_lower in path_lower:
+                return True
+        return False
+
     def _fix_permissions(self, path: Path) -> None:
         """Fix file/directory permissions if configured (Unix only)."""
         if not IS_UNIX:
@@ -226,6 +245,38 @@ class ModpackInstaller:
         user_dir = self.mods_dir / "user"
         if user_dir.exists():
             print(f"  ✓ Preserving: user/ directory")
+
+    def _copy_override_directory(self, src_dir: Path, dest_dir: Path, rel_base: str = "") -> int:
+        """Recursively copy override directory while preserving protected configs.
+        
+        Args:
+            src_dir: Source directory to copy from
+            dest_dir: Destination directory to copy to
+            rel_base: Relative path base for tracking (for preserved_configs matching)
+            
+        Returns:
+            Number of files copied
+        """
+        copied = 0
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        
+        for item in src_dir.iterdir():
+            rel_path = f"{rel_base}/{item.name}" if rel_base else item.name
+            dest_path = dest_dir / item.name
+            
+            if item.is_dir():
+                # Recursively handle subdirectories
+                copied += self._copy_override_directory(item, dest_path, rel_path)
+            else:
+                # Check if this specific file should be preserved
+                if dest_path.exists() and self._is_preserved_config(rel_path):
+                    print(f"  ✓ Preserving config: {rel_path}")
+                    continue
+                    
+                shutil.copy2(item, dest_path)
+                copied += 1
+                
+        return copied
 
     def install(self, force: bool = False) -> None:
         """Install the modpack."""
@@ -336,11 +387,13 @@ class ModpackInstaller:
 
             override_mods = 0
             override_skipped = 0
+            override_configs = 0
 
             for override_src in [overrides_dir, server_overrides_dir]:
                 if not override_src.exists():
                     continue
 
+                # Handle mods in overrides
                 override_mods_dir = override_src / "mods"
                 if override_mods_dir.exists():
                     for mod_file in override_mods_dir.iterdir():
@@ -357,19 +410,25 @@ class ModpackInstaller:
                         override_mods += 1
                         print(f"  ✓ Override: {mod_file.name}")
 
-                # Copy other override files (config, etc) - but not mods or client-overrides
+                # Copy other override files (config, etc) - but not mods
                 for item in override_src.iterdir():
                     if item.name == "mods":
                         continue
 
                     dest = self.config.instance_dir / item.name
+                    
                     if item.is_dir():
-                        if dest.exists():
-                            shutil.rmtree(dest)
-                        shutil.copytree(item, dest)
-                        print(f"  ✓ Override: {item.name}/")
+                        # Use the new recursive copy that respects preserved_configs
+                        copied = self._copy_override_directory(item, dest, item.name)
+                        override_configs += copied
+                        print(f"  ✓ Override: {item.name}/ ({copied} files)")
                     else:
+                        # Single file - check if preserved
+                        if dest.exists() and self._is_preserved_config(item.name):
+                            print(f"  ✓ Preserving config: {item.name}")
+                            continue
                         shutil.copy2(item, dest)
+                        override_configs += 1
                         print(f"  ✓ Override: {item.name}")
 
             # Fix permissions (Unix only)
@@ -385,10 +444,13 @@ class ModpackInstaller:
             print(f"Installation complete: {version_num}")
             print(f"  Downloaded: {downloaded} mods")
             print(f"  From overrides: {override_mods} mods")
+            print(f"  Config files: {override_configs}")
             print(f"  Skipped (client-only): {skipped_client + override_skipped}")
             print(f"  Skipped (other): {skipped_other}")
             if failed:
                 print(f"  Failed: {failed}")
+            if self.config.preserved_configs:
+                print(f"  Preserved configs: {', '.join(self.config.preserved_configs)}")
             print(f"{'='*50}")
 
 
